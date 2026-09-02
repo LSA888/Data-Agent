@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+node_modules/
+
+# 敏感配置（含 api_key），只上传 example 模板
+conf/app_config.yaml
+
+# 本地 Embedding 模型（1.3GB，超 GitHub 限制，见 README 下载说明）
+docker/embedding/
+
+# 日志
+logs/
+
+# 前端构建产物
+data-agent-fronted/dist/
+
+# IDE / 系统
+.idea/
+.vscode/
+Thumbs.db

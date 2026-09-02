@@ -1,0 +1,13 @@
+﻿ProxyEnable: 0
+ProxyServer: 127.0.0.1:7897
+--- User env proxies ---
+HTTP_PROXY(User): 
+HTTPS_PROXY(User): 
+http_proxy(User): 
+https_proxy(User): 
+--- Machine env proxies ---
+HTTP_PROXY(Machine): 
+HTTPS_PROXY(Machine): 
+--- Current session env proxies ---
+HTTP_PROXY: http://127.0.0.1:62279
+HTTPS_PROXY: http://127.0.0.1:62279
