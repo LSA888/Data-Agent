@@ -5,8 +5,8 @@ tables:
     columns:
       - name: region_id
         role: primary_key
-        description: 地区唯一标识。
-        alias: [地区ID, 区域ID]
+        description: 省份唯一标识 (外键关联 fact_order)。
+        alias: [省份ID, 区域ID]
         sync: false
 
       - name: province
@@ -147,8 +147,8 @@ tables:
 
       - name: region_id
         role: foreign_key
-        description: 关联地区维度的外键。
-        alias: [地区ID, 区域ID]
+        description: 关联地区维度的外键 (指向省份粒度)。
+        alias: [省份ID, 区域ID]
         sync: false
 
       - name: order_quantity

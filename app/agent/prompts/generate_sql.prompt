@@ -22,6 +22,23 @@
 5. 默认只生成一条SQL，不可生成多条SQL。
 6. 输出必须仅包含一条完整 SQL 语句的纯文本，严禁使用```、```sql 等 Markdown代码块或任何格式化符号。
 
+【分组粒度规则】
+当用户的查询涉及"各地区"、"各区域"、"各大区"时, 必须使用 region_name (大区, 如华东/华南) 进行 GROUP BY 或窗口函数的 PARTITION BY;
+当用户提到"省份"、"省市"时, 使用 province 字段;
+严禁使用 region_id 进行 GROUP BY 或 PARTITION BY 分组, 因为 region_id 是省份粒度的外键, 语义上不等同于"地区/区域/大区"。
+
+【窗口函数使用规则】
+当需要"每组内排序取前N"时 (如各区域销售额前3的产品), 必须使用窗口函数, 模板如下:
+  SELECT outer.col1, outer.col2, outer.total_amount
+  FROM (
+      SELECT col1, col2, SUM(amount) AS total_amount,
+             ROW_NUMBER() OVER (PARTITION BY 分组字段 ORDER BY SUM(amount) DESC) AS rn
+      FROM ... JOIN ... GROUP BY ...
+  ) outer
+  WHERE outer.rn <= N
+
+注意 PARTITION BY 的字段必须与 GROUP BY 的"分组粒度"一致 (例如按 region_name 分组时, PARTITION BY 也必须是 region_name, 不能是 region_id)。
+
 用户查询如下：
 {query}
 

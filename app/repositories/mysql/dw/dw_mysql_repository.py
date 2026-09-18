@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,6 +29,19 @@ class DWMySQLRepository:
     async def validate_sql(self, sql):
         await self.session.execute(text(f"explain {sql}"))
 
+    @staticmethod
+    def _format_value(value):
+        """对 float 和 Decimal 类型保留两位小数，其他类型原样返回。"""
+        if isinstance(value, float):
+            return round(value, 2)
+        if isinstance(value, Decimal):
+            return float(round(value, 2))
+        return value
+
     async def execute_sql(self, sql):
         result = await self.session.execute(text(sql))
-        return [dict(row) for row in result.mappings().fetchall()]
+        rows = [dict(row) for row in result.mappings().fetchall()]
+        for row in rows:
+            for key in row:
+                row[key] = self._format_value(row[key])
+        return rows
