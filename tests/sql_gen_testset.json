@@ -1113,12 +1113,2229 @@
         }
       ],
       "result_row_count": 4
+    },
+    {
+      "id": "L36",
+      "difficulty": "简单",
+      "category": "等值过滤+JOIN",
+      "nl": "女性客户的订单总数",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT COUNT(f.order_id) AS female_order_count FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id WHERE c.gender = '女'",
+      "expected_result": [
+        {
+          "female_order_count": 737
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L37",
+      "difficulty": "简单",
+      "category": "等值过滤+JOIN",
+      "nl": "北京市的订单数量",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT COUNT(f.order_id) AS order_count FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id WHERE r.province = '北京市'",
+      "expected_result": [
+        {
+          "order_count": 111
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L38",
+      "difficulty": "简单",
+      "category": "等值过滤+JOIN",
+      "nl": "华为品牌的总销售额",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id WHERE p.brand = '华为'",
+      "expected_result": [
+        {
+          "gmv": 1361929.44
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L39",
+      "difficulty": "简单",
+      "category": "时间过滤+JOIN",
+      "nl": "2025年Q4的销售额",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 AND d.quarter = 'Q4'",
+      "expected_result": [
+        {
+          "gmv": 1954612.68
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L40",
+      "difficulty": "简单",
+      "category": "等值过滤+JOIN",
+      "nl": "家用电器品类的总销量",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT SUM(f.order_quantity) AS total_quantity FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id WHERE p.category = '家用电器'",
+      "expected_result": [
+        {
+          "total_quantity": 724
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L41",
+      "difficulty": "简单",
+      "category": "单表聚合AVG",
+      "nl": "平均每笔订单购买多少件商品",
+      "target_schema": "fact_order(order_quantity)",
+      "gold_sql": "SELECT ROUND(AVG(order_quantity), 2) AS avg_quantity FROM fact_order",
+      "expected_result": [
+        {
+          "avg_quantity": 3.18
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L42",
+      "difficulty": "简单",
+      "category": "单表聚合MAX",
+      "nl": "单笔订单的最高金额是多少",
+      "target_schema": "fact_order(order_amount)",
+      "gold_sql": "SELECT ROUND(MAX(order_amount), 2) AS max_amount FROM fact_order",
+      "expected_result": [
+        {
+          "max_amount": 181974.0
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L43",
+      "difficulty": "简单",
+      "category": "单表聚合MIN",
+      "nl": "单笔订单的最低金额是多少",
+      "target_schema": "fact_order(order_amount)",
+      "gold_sql": "SELECT ROUND(MIN(order_amount), 2) AS min_amount FROM fact_order",
+      "expected_result": [
+        {
+          "min_amount": 3.17
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L44",
+      "difficulty": "简单",
+      "category": "去重计数+JOIN",
+      "nl": "下过单的铂金会员有多少人",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT COUNT(DISTINCT c.customer_id) AS platinum_customer_count FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id WHERE c.member_level = '铂金'",
+      "expected_result": [
+        {
+          "platinum_customer_count": 9
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L45",
+      "difficulty": "简单",
+      "category": "去重计数+JOIN",
+      "nl": "服饰品类包含多少个不同品牌",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT COUNT(DISTINCT p.brand) AS brand_count FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id WHERE p.category = '服饰'",
+      "expected_result": [
+        {
+          "brand_count": 4
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L46",
+      "difficulty": "简单",
+      "category": "时间过滤+JOIN",
+      "nl": "2025年下半年的总销售额",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 AND d.month >= 7",
+      "expected_result": [
+        {
+          "gmv": 4242773.34
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L47",
+      "difficulty": "简单",
+      "category": "单表阈值过滤",
+      "nl": "购买数量大于5件的订单有多少个",
+      "target_schema": "fact_order(order_quantity)",
+      "gold_sql": "SELECT COUNT(order_id) AS multi_item_order_count FROM fact_order WHERE order_quantity > 5",
+      "expected_result": [
+        {
+          "multi_item_order_count": 97
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L48",
+      "difficulty": "中等",
+      "category": "GROUP BY+双指标",
+      "nl": "不同性别的消费金额和订单数",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT c.gender, ROUND(SUM(f.order_amount), 2) AS gmv, COUNT(f.order_id) AS order_count FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id GROUP BY c.gender",
+      "expected_result": [
+        {
+          "gender": "男",
+          "gmv": 4726806.48,
+          "order_count": 739
+        },
+        {
+          "gender": "女",
+          "gmv": 4514304.94,
+          "order_count": 737
+        }
+      ],
+      "result_row_count": 2
+    },
+    {
+      "id": "L49",
+      "difficulty": "中等",
+      "category": "GROUP BY+排序",
+      "nl": "各大区的总销量排名",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.region_name, SUM(f.order_quantity) AS total_quantity FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name ORDER BY total_quantity DESC",
+      "expected_result": [
+        {
+          "region_name": "华东",
+          "total_quantity": 1185
+        },
+        {
+          "region_name": "西南",
+          "total_quantity": 999
+        },
+        {
+          "region_name": "东北",
+          "total_quantity": 857
+        },
+        {
+          "region_name": "西北",
+          "total_quantity": 493
+        },
+        {
+          "region_name": "华南",
+          "total_quantity": 455
+        },
+        {
+          "region_name": "华北",
+          "total_quantity": 367
+        },
+        {
+          "region_name": "华中",
+          "total_quantity": 344
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L50",
+      "difficulty": "中等",
+      "category": "GROUP BY+排序",
+      "nl": "各商品品类的订单数量",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.category, COUNT(f.order_id) AS order_count FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY order_count DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "order_count": 445
+        },
+        {
+          "category": "家用电器",
+          "order_count": 243
+        },
+        {
+          "category": "食品饮料",
+          "order_count": 198
+        },
+        {
+          "category": "鞋靴",
+          "order_count": 193
+        },
+        {
+          "category": "服饰",
+          "order_count": 175
+        },
+        {
+          "category": "休闲零食",
+          "order_count": 144
+        },
+        {
+          "category": "图书文娱",
+          "order_count": 78
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L51",
+      "difficulty": "中等",
+      "category": "GROUP BY+AOV排序",
+      "nl": "各品牌的平均订单金额排名",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.brand, ROUND(SUM(f.order_amount) / COUNT(f.order_id), 2) AS aov FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.brand ORDER BY aov DESC",
+      "expected_result": [
+        {
+          "brand": "三星",
+          "aov": 25678.54
+        },
+        {
+          "brand": "索尼",
+          "aov": 21512.97
+        },
+        {
+          "brand": "苹果",
+          "aov": 21241.18
+        },
+        {
+          "brand": "任天堂",
+          "aov": 17735.33
+        },
+        {
+          "brand": "华为",
+          "aov": 16213.45
+        },
+        {
+          "brand": "Bose",
+          "aov": 11896.25
+        },
+        {
+          "brand": "OPPO",
+          "aov": 11159.22
+        },
+        {
+          "brand": "戴森",
+          "aov": 10597.78
+        },
+        {
+          "brand": "vivo",
+          "aov": 10383.66
+        },
+        {
+          "brand": "格力",
+          "aov": 8481.7
+        },
+        {
+          "brand": "小米",
+          "aov": 6764.92
+        },
+        {
+          "brand": "美的",
+          "aov": 6629.39
+        },
+        {
+          "brand": "飞利浦",
+          "aov": 4670.25
+        },
+        {
+          "brand": "亚马逊",
+          "aov": 4236.33
+        },
+        {
+          "brand": "海尔",
+          "aov": 2872.18
+        },
+        {
+          "brand": "阿迪达斯",
+          "aov": 2775.18
+        },
+        {
+          "brand": "Instant Pot",
+          "aov": 2209.5
+        },
+        {
+          "brand": "耐克",
+          "aov": 2038.77
+        },
+        {
+          "brand": "李维斯",
+          "aov": 1985.72
+        },
+        {
+          "brand": "New Balance",
+          "aov": 1737.19
+        },
+        {
+          "brand": "重庆出版社",
+          "aov": 927.29
+        },
+        {
+          "brand": "H&M",
+          "aov": 725.63
+        },
+        {
+          "brand": "乐高",
+          "aov": 642.66
+        },
+        {
+          "brand": "优衣库",
+          "aov": 513.85
+        },
+        {
+          "brand": "ZARA",
+          "aov": 397.52
+        },
+        {
+          "brand": "星巴克",
+          "aov": 274.59
+        },
+        {
+          "brand": "农夫山泉",
+          "aov": 220.91
+        },
+        {
+          "brand": "三只松鼠",
+          "aov": 178.69
+        },
+        {
+          "brand": "伊利",
+          "aov": 166.11
+        },
+        {
+          "brand": "雀巢",
+          "aov": 94.78
+        },
+        {
+          "brand": "良品铺子",
+          "aov": 57.44
+        },
+        {
+          "brand": "蒙牛",
+          "aov": 29.64
+        },
+        {
+          "brand": "奥利奥",
+          "aov": 25.67
+        },
+        {
+          "brand": "乐事",
+          "aov": 24.57
+        }
+      ],
+      "result_row_count": 34
+    },
+    {
+      "id": "L52",
+      "difficulty": "中等",
+      "category": "Top N LIMIT",
+      "nl": "销售额最高的前3个省份",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.province, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.province ORDER BY gmv DESC LIMIT 3",
+      "expected_result": [
+        {
+          "province": "四川省",
+          "gmv": 843801.22
+        },
+        {
+          "province": "广东省",
+          "gmv": 768303.55
+        },
+        {
+          "province": "云南省",
+          "gmv": 761912.31
+        }
+      ],
+      "result_row_count": 3
+    },
+    {
+      "id": "L53",
+      "difficulty": "中等",
+      "category": "Top N LIMIT",
+      "nl": "订单数量最多的前5个品牌",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.brand, COUNT(f.order_id) AS order_count FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.brand ORDER BY order_count DESC, p.brand LIMIT 5",
+      "expected_result": [
+        {
+          "brand": "耐克",
+          "order_count": 87
+        },
+        {
+          "brand": "华为",
+          "order_count": 84
+        },
+        {
+          "brand": "苹果",
+          "order_count": 75
+        },
+        {
+          "brand": "阿迪达斯",
+          "order_count": 75
+        },
+        {
+          "brand": "戴森",
+          "order_count": 70
+        }
+      ],
+      "result_row_count": 5
+    },
+    {
+      "id": "L54",
+      "difficulty": "中等",
+      "category": "时间序列",
+      "nl": "2025年每个季度的总销量",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT d.quarter, SUM(f.order_quantity) AS total_quantity FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 GROUP BY d.quarter ORDER BY d.quarter",
+      "expected_result": [
+        {
+          "quarter": "Q1",
+          "total_quantity": 1708
+        },
+        {
+          "quarter": "Q2",
+          "total_quantity": 1031
+        },
+        {
+          "quarter": "Q3",
+          "total_quantity": 1002
+        },
+        {
+          "quarter": "Q4",
+          "total_quantity": 959
+        }
+      ],
+      "result_row_count": 4
+    },
+    {
+      "id": "L55",
+      "difficulty": "中等",
+      "category": "GROUP BY+去重计数",
+      "nl": "各会员等级的下单客户数",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT c.member_level, COUNT(DISTINCT f.customer_id) AS customer_count FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id GROUP BY c.member_level",
+      "expected_result": [
+        {
+          "member_level": "白银",
+          "customer_count": 10
+        },
+        {
+          "member_level": "铂金",
+          "customer_count": 9
+        },
+        {
+          "member_level": "青铜",
+          "customer_count": 9
+        },
+        {
+          "member_level": "黄金",
+          "customer_count": 12
+        }
+      ],
+      "result_row_count": 4
+    },
+    {
+      "id": "L56",
+      "difficulty": "中等",
+      "category": "双维度GROUP BY",
+      "nl": "各大区下每个省份的销售额",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.region_name, r.province, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name, r.province ORDER BY r.region_name, gmv DESC",
+      "expected_result": [
+        {
+          "region_name": "东北",
+          "province": "黑龙江省",
+          "gmv": 680125.76
+        },
+        {
+          "region_name": "东北",
+          "province": "辽宁省",
+          "gmv": 584103.31
+        },
+        {
+          "region_name": "东北",
+          "province": "吉林省",
+          "gmv": 480268.45
+        },
+        {
+          "region_name": "华东",
+          "province": "福建省",
+          "gmv": 645277.07
+        },
+        {
+          "region_name": "华东",
+          "province": "江苏省",
+          "gmv": 641641.27
+        },
+        {
+          "region_name": "华东",
+          "province": "上海市",
+          "gmv": 530037.73
+        },
+        {
+          "region_name": "华东",
+          "province": "浙江省",
+          "gmv": 464293.75
+        },
+        {
+          "region_name": "华中",
+          "province": "湖北省",
+          "gmv": 501912.0
+        },
+        {
+          "region_name": "华北",
+          "province": "北京市",
+          "gmv": 640790.41
+        },
+        {
+          "region_name": "华南",
+          "province": "广东省",
+          "gmv": 768303.55
+        },
+        {
+          "region_name": "西北",
+          "province": "陕西省",
+          "gmv": 643845.98
+        },
+        {
+          "region_name": "西北",
+          "province": "甘肃省",
+          "gmv": 524668.13
+        },
+        {
+          "region_name": "西南",
+          "province": "四川省",
+          "gmv": 843801.22
+        },
+        {
+          "region_name": "西南",
+          "province": "云南省",
+          "gmv": 761912.31
+        },
+        {
+          "region_name": "西南",
+          "province": "贵州省",
+          "gmv": 530130.48
+        }
+      ],
+      "result_row_count": 15
+    },
+    {
+      "id": "L57",
+      "difficulty": "中等",
+      "category": "GROUP BY+AOV排序",
+      "nl": "各商品品类的平均客单价",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(f.order_amount) / COUNT(f.order_id), 2) AS aov FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY aov DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "aov": 15647.3
+        },
+        {
+          "category": "家用电器",
+          "aov": 6493.77
+        },
+        {
+          "category": "鞋靴",
+          "aov": 2276.5
+        },
+        {
+          "category": "服饰",
+          "aov": 903.67
+        },
+        {
+          "category": "图书文娱",
+          "aov": 792.27
+        },
+        {
+          "category": "食品饮料",
+          "aov": 154.64
+        },
+        {
+          "category": "休闲零食",
+          "aov": 70.52
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L58",
+      "difficulty": "中等",
+      "category": "过滤+GROUP BY",
+      "nl": "男性客户在各品类的消费金额",
+      "target_schema": "fact_order, dim_customer, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id JOIN dim_product p ON f.product_id = p.product_id WHERE c.gender = '男' GROUP BY p.category ORDER BY gmv DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "gmv": 3781126.14
+        },
+        {
+          "category": "家用电器",
+          "gmv": 608393.99
+        },
+        {
+          "category": "鞋靴",
+          "gmv": 224841.13
+        },
+        {
+          "category": "服饰",
+          "gmv": 59687.87
+        },
+        {
+          "category": "图书文娱",
+          "gmv": 31742.66
+        },
+        {
+          "category": "食品饮料",
+          "gmv": 15788.85
+        },
+        {
+          "category": "休闲零食",
+          "gmv": 5225.84
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L59",
+      "difficulty": "中等",
+      "category": "双维度GROUP BY",
+      "nl": "各季度各大区的销售额",
+      "target_schema": "fact_order, dim_date, dim_region",
+      "gold_sql": "SELECT d.quarter, r.region_name, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id JOIN dim_region r ON f.region_id = r.region_id GROUP BY d.quarter, r.region_name ORDER BY d.quarter, gmv DESC",
+      "expected_result": [
+        {
+          "quarter": "Q1",
+          "region_name": "华东",
+          "gmv": 805381.96
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "西南",
+          "gmv": 612144.07
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "东北",
+          "gmv": 528190.96
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "西北",
+          "gmv": 447061.1
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "华南",
+          "gmv": 314211.37
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "华北",
+          "gmv": 239447.71
+        },
+        {
+          "quarter": "Q1",
+          "region_name": "华中",
+          "gmv": 172981.19
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "西南",
+          "gmv": 415811.65
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "华东",
+          "gmv": 402965.82
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "东北",
+          "gmv": 376406.98
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "西北",
+          "gmv": 233568.13
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "华南",
+          "gmv": 174654.62
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "华北",
+          "gmv": 156652.65
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "华中",
+          "gmv": 118859.87
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "西南",
+          "gmv": 692529.03
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "华东",
+          "gmv": 547993.81
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "东北",
+          "gmv": 396857.27
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "华北",
+          "gmv": 192279.48
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "西北",
+          "gmv": 182470.55
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "华中",
+          "gmv": 142802.55
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "华南",
+          "gmv": 133227.97
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "华东",
+          "gmv": 524908.23
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "东北",
+          "gmv": 443042.31
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "西南",
+          "gmv": 415359.26
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "西北",
+          "gmv": 305414.33
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "华南",
+          "gmv": 146209.59
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "华中",
+          "gmv": 67268.39
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "华北",
+          "gmv": 52410.57
+        }
+      ],
+      "result_row_count": 28
+    },
+    {
+      "id": "L60",
+      "difficulty": "中等",
+      "category": "Top N+去重计数",
+      "nl": "下单客户数最多的前5个省份",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.province, COUNT(DISTINCT f.customer_id) AS customer_count FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.province ORDER BY customer_count DESC, r.province LIMIT 5",
+      "expected_result": [
+        {
+          "province": "上海市",
+          "customer_count": 39
+        },
+        {
+          "province": "吉林省",
+          "customer_count": 39
+        },
+        {
+          "province": "四川省",
+          "customer_count": 39
+        },
+        {
+          "province": "北京市",
+          "customer_count": 38
+        },
+        {
+          "province": "广东省",
+          "customer_count": 38
+        }
+      ],
+      "result_row_count": 5
+    },
+    {
+      "id": "L61",
+      "difficulty": "中等",
+      "category": "时间序列",
+      "nl": "2025年每个月的订单数量",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT d.month, COUNT(f.order_id) AS order_count FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 GROUP BY d.month ORDER BY d.month",
+      "expected_result": [
+        {
+          "month": 1,
+          "order_count": 153
+        },
+        {
+          "month": 2,
+          "order_count": 132
+        },
+        {
+          "month": 3,
+          "order_count": 167
+        },
+        {
+          "month": 4,
+          "order_count": 109
+        },
+        {
+          "month": 5,
+          "order_count": 122
+        },
+        {
+          "month": 6,
+          "order_count": 103
+        },
+        {
+          "month": 7,
+          "order_count": 116
+        },
+        {
+          "month": 8,
+          "order_count": 112
+        },
+        {
+          "month": 9,
+          "order_count": 114
+        },
+        {
+          "month": 10,
+          "order_count": 125
+        },
+        {
+          "month": 11,
+          "order_count": 113
+        },
+        {
+          "month": 12,
+          "order_count": 110
+        }
+      ],
+      "result_row_count": 12
+    },
+    {
+      "id": "L62",
+      "difficulty": "中等",
+      "category": "过滤+Top N",
+      "nl": "黄金会员消费金额最高的前3个品类",
+      "target_schema": "fact_order, dim_customer, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id JOIN dim_product p ON f.product_id = p.product_id WHERE c.member_level = '黄金' GROUP BY p.category ORDER BY gmv DESC LIMIT 3",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "gmv": 1944936.55
+        },
+        {
+          "category": "家用电器",
+          "gmv": 389767.29
+        },
+        {
+          "category": "鞋靴",
+          "gmv": 181649.16
+        }
+      ],
+      "result_row_count": 3
+    },
+    {
+      "id": "L63",
+      "difficulty": "中等",
+      "category": "Top N+排序",
+      "nl": "销量最高的前10个品牌",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.brand, SUM(f.order_quantity) AS quantity FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.brand ORDER BY quantity DESC, p.brand LIMIT 10",
+      "expected_result": [
+        {
+          "brand": "奥利奥",
+          "quantity": 263
+        },
+        {
+          "brand": "耐克",
+          "quantity": 249
+        },
+        {
+          "brand": "蒙牛",
+          "quantity": 238
+        },
+        {
+          "brand": "阿迪达斯",
+          "quantity": 221
+        },
+        {
+          "brand": "苹果",
+          "quantity": 217
+        },
+        {
+          "brand": "戴森",
+          "quantity": 213
+        },
+        {
+          "brand": "华为",
+          "quantity": 209
+        },
+        {
+          "brand": "索尼",
+          "quantity": 194
+        },
+        {
+          "brand": "乐事",
+          "quantity": 183
+        },
+        {
+          "brand": "雀巢",
+          "quantity": 174
+        }
+      ],
+      "result_row_count": 10
+    },
+    {
+      "id": "L64",
+      "difficulty": "中等",
+      "category": "HAVING分组后过滤",
+      "nl": "平均订单金额超过7000元的会员等级",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT c.member_level, ROUND(SUM(f.order_amount) / COUNT(f.order_id), 2) AS aov FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id GROUP BY c.member_level HAVING SUM(f.order_amount) / COUNT(f.order_id) > 7000 ORDER BY aov DESC",
+      "expected_result": [
+        {
+          "member_level": "白银",
+          "aov": 7342.55
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L65",
+      "difficulty": "中等",
+      "category": "Top N LIMIT",
+      "nl": "销售额最高的前3个大区",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.region_name, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name ORDER BY gmv DESC LIMIT 3",
+      "expected_result": [
+        {
+          "region_name": "华东",
+          "gmv": 2281249.82
+        },
+        {
+          "region_name": "西南",
+          "gmv": 2135844.01
+        },
+        {
+          "region_name": "东北",
+          "gmv": 1744497.52
+        }
+      ],
+      "result_row_count": 3
+    },
+    {
+      "id": "L66",
+      "difficulty": "困难",
+      "category": "子查询+占比",
+      "nl": "各省份销售额占全国总销售额的比例",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.province, ROUND(SUM(f.order_amount) / (SELECT SUM(order_amount) FROM fact_order), 4) AS gmv_ratio FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.province ORDER BY gmv_ratio DESC",
+      "expected_result": [
+        {
+          "province": "四川省",
+          "gmv_ratio": 0.0913
+        },
+        {
+          "province": "广东省",
+          "gmv_ratio": 0.0831
+        },
+        {
+          "province": "云南省",
+          "gmv_ratio": 0.0824
+        },
+        {
+          "province": "黑龙江省",
+          "gmv_ratio": 0.0736
+        },
+        {
+          "province": "福建省",
+          "gmv_ratio": 0.0698
+        },
+        {
+          "province": "陕西省",
+          "gmv_ratio": 0.0697
+        },
+        {
+          "province": "江苏省",
+          "gmv_ratio": 0.0694
+        },
+        {
+          "province": "北京市",
+          "gmv_ratio": 0.0693
+        },
+        {
+          "province": "辽宁省",
+          "gmv_ratio": 0.0632
+        },
+        {
+          "province": "上海市",
+          "gmv_ratio": 0.0574
+        },
+        {
+          "province": "贵州省",
+          "gmv_ratio": 0.0574
+        },
+        {
+          "province": "甘肃省",
+          "gmv_ratio": 0.0568
+        },
+        {
+          "province": "湖北省",
+          "gmv_ratio": 0.0543
+        },
+        {
+          "province": "吉林省",
+          "gmv_ratio": 0.052
+        },
+        {
+          "province": "浙江省",
+          "gmv_ratio": 0.0502
+        }
+      ],
+      "result_row_count": 15
+    },
+    {
+      "id": "L67",
+      "difficulty": "困难",
+      "category": "子查询+占比",
+      "nl": "各商品品类的销售额占比",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(f.order_amount) / (SELECT SUM(order_amount) FROM fact_order), 4) AS gmv_ratio FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY gmv_ratio DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "gmv_ratio": 0.7535
+        },
+        {
+          "category": "家用电器",
+          "gmv_ratio": 0.1708
+        },
+        {
+          "category": "鞋靴",
+          "gmv_ratio": 0.0475
+        },
+        {
+          "category": "服饰",
+          "gmv_ratio": 0.0171
+        },
+        {
+          "category": "图书文娱",
+          "gmv_ratio": 0.0067
+        },
+        {
+          "category": "食品饮料",
+          "gmv_ratio": 0.0033
+        },
+        {
+          "category": "休闲零食",
+          "gmv_ratio": 0.0011
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L68",
+      "difficulty": "困难",
+      "category": "窗口函数 ROW_NUMBER",
+      "nl": "每个大区内部销售额排名前2的省份",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT t.region_name, t.province, t.gmv FROM (SELECT r.region_name, r.province, ROUND(SUM(f.order_amount), 2) AS gmv, ROW_NUMBER() OVER(PARTITION BY r.region_name ORDER BY SUM(f.order_amount) DESC, r.province) AS rn FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name, r.province) t WHERE t.rn <= 2 ORDER BY t.region_name, t.gmv DESC",
+      "expected_result": [
+        {
+          "region_name": "东北",
+          "province": "黑龙江省",
+          "gmv": 680125.76
+        },
+        {
+          "region_name": "东北",
+          "province": "辽宁省",
+          "gmv": 584103.31
+        },
+        {
+          "region_name": "华东",
+          "province": "福建省",
+          "gmv": 645277.07
+        },
+        {
+          "region_name": "华东",
+          "province": "江苏省",
+          "gmv": 641641.27
+        },
+        {
+          "region_name": "华中",
+          "province": "湖北省",
+          "gmv": 501912.0
+        },
+        {
+          "region_name": "华北",
+          "province": "北京市",
+          "gmv": 640790.41
+        },
+        {
+          "region_name": "华南",
+          "province": "广东省",
+          "gmv": 768303.55
+        },
+        {
+          "region_name": "西北",
+          "province": "陕西省",
+          "gmv": 643845.98
+        },
+        {
+          "region_name": "西北",
+          "province": "甘肃省",
+          "gmv": 524668.13
+        },
+        {
+          "region_name": "西南",
+          "province": "四川省",
+          "gmv": 843801.22
+        },
+        {
+          "region_name": "西南",
+          "province": "云南省",
+          "gmv": 761912.31
+        }
+      ],
+      "result_row_count": 11
+    },
+    {
+      "id": "L69",
+      "difficulty": "困难",
+      "category": "窗口函数+组内占比",
+      "nl": "各品牌销售额占其所属品类总销售额的比例",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.brand, p.category, ROUND(SUM(f.order_amount) / SUM(SUM(f.order_amount)) OVER(PARTITION BY p.category), 4) AS ratio_in_category FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.brand, p.category ORDER BY p.category, ratio_in_category DESC",
+      "expected_result": [
+        {
+          "brand": "三只松鼠",
+          "category": "休闲零食",
+          "ratio_in_category": 0.6159
+        },
+        {
+          "brand": "良品铺子",
+          "category": "休闲零食",
+          "ratio_in_category": 0.2036
+        },
+        {
+          "brand": "奥利奥",
+          "category": "休闲零食",
+          "ratio_in_category": 0.091
+        },
+        {
+          "brand": "乐事",
+          "category": "休闲零食",
+          "ratio_in_category": 0.0895
+        },
+        {
+          "brand": "重庆出版社",
+          "category": "图书文娱",
+          "ratio_in_category": 0.6152
+        },
+        {
+          "brand": "乐高",
+          "category": "图书文娱",
+          "ratio_in_category": 0.3848
+        },
+        {
+          "brand": "戴森",
+          "category": "家用电器",
+          "ratio_in_category": 0.4701
+        },
+        {
+          "brand": "格力",
+          "category": "家用电器",
+          "ratio_in_category": 0.1559
+        },
+        {
+          "brand": "美的",
+          "category": "家用电器",
+          "ratio_in_category": 0.1554
+        },
+        {
+          "brand": "飞利浦",
+          "category": "家用电器",
+          "ratio_in_category": 0.1065
+        },
+        {
+          "brand": "Instant Pot",
+          "category": "家用电器",
+          "ratio_in_category": 0.0574
+        },
+        {
+          "brand": "海尔",
+          "category": "家用电器",
+          "ratio_in_category": 0.0546
+        },
+        {
+          "brand": "苹果",
+          "category": "手机数码",
+          "ratio_in_category": 0.2288
+        },
+        {
+          "brand": "华为",
+          "category": "手机数码",
+          "ratio_in_category": 0.1956
+        },
+        {
+          "brand": "三星",
+          "category": "手机数码",
+          "ratio_in_category": 0.1328
+        },
+        {
+          "brand": "索尼",
+          "category": "手机数码",
+          "ratio_in_category": 0.1174
+        },
+        {
+          "brand": "任天堂",
+          "category": "手机数码",
+          "ratio_in_category": 0.1044
+        },
+        {
+          "brand": "vivo",
+          "category": "手机数码",
+          "ratio_in_category": 0.0641
+        },
+        {
+          "brand": "OPPO",
+          "category": "手机数码",
+          "ratio_in_category": 0.0625
+        },
+        {
+          "brand": "Bose",
+          "category": "手机数码",
+          "ratio_in_category": 0.0478
+        },
+        {
+          "brand": "小米",
+          "category": "手机数码",
+          "ratio_in_category": 0.0253
+        },
+        {
+          "brand": "亚马逊",
+          "category": "手机数码",
+          "ratio_in_category": 0.0213
+        },
+        {
+          "brand": "李维斯",
+          "category": "服饰",
+          "ratio_in_category": 0.5525
+        },
+        {
+          "brand": "优衣库",
+          "category": "服饰",
+          "ratio_in_category": 0.2015
+        },
+        {
+          "brand": "H&M",
+          "category": "服饰",
+          "ratio_in_category": 0.1606
+        },
+        {
+          "brand": "ZARA",
+          "category": "服饰",
+          "ratio_in_category": 0.0855
+        },
+        {
+          "brand": "阿迪达斯",
+          "category": "鞋靴",
+          "ratio_in_category": 0.4737
+        },
+        {
+          "brand": "耐克",
+          "category": "鞋靴",
+          "ratio_in_category": 0.4037
+        },
+        {
+          "brand": "New Balance",
+          "category": "鞋靴",
+          "ratio_in_category": 0.1226
+        },
+        {
+          "brand": "星巴克",
+          "category": "食品饮料",
+          "ratio_in_category": 0.4125
+        },
+        {
+          "brand": "伊利",
+          "category": "食品饮料",
+          "ratio_in_category": 0.2116
+        },
+        {
+          "brand": "农夫山泉",
+          "category": "食品饮料",
+          "ratio_in_category": 0.1948
+        },
+        {
+          "brand": "雀巢",
+          "category": "食品饮料",
+          "ratio_in_category": 0.1424
+        },
+        {
+          "brand": "蒙牛",
+          "category": "食品饮料",
+          "ratio_in_category": 0.0387
+        }
+      ],
+      "result_row_count": 34
+    },
+    {
+      "id": "L70",
+      "difficulty": "困难",
+      "category": "窗口函数 LAG 月环比",
+      "nl": "2025年各月GMV及环比增长率",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT t.month, ROUND(t.gmv, 2) AS gmv, ROUND((t.gmv - LAG(t.gmv) OVER(ORDER BY t.month)) / LAG(t.gmv) OVER(ORDER BY t.month) * 100, 2) AS growth_pct FROM (SELECT d.month, SUM(f.order_amount) AS gmv FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 GROUP BY d.month) t ORDER BY t.month",
+      "expected_result": [
+        {
+          "month": 1,
+          "gmv": 938804.94,
+          "growth_pct": null
+        },
+        {
+          "month": 2,
+          "gmv": 534303.54,
+          "growth_pct": -43.09
+        },
+        {
+          "month": 3,
+          "gmv": 1646309.87,
+          "growth_pct": 208.12
+        },
+        {
+          "month": 4,
+          "gmv": 542159.37,
+          "growth_pct": -67.07
+        },
+        {
+          "month": 5,
+          "gmv": 705063.59,
+          "growth_pct": 30.05
+        },
+        {
+          "month": 6,
+          "gmv": 631696.76,
+          "growth_pct": -10.41
+        },
+        {
+          "month": 7,
+          "gmv": 810136.7,
+          "growth_pct": 28.25
+        },
+        {
+          "month": 8,
+          "gmv": 933458.37,
+          "growth_pct": 15.22
+        },
+        {
+          "month": 9,
+          "gmv": 544565.58,
+          "growth_pct": -41.66
+        },
+        {
+          "month": 10,
+          "gmv": 876059.36,
+          "growth_pct": 60.87
+        },
+        {
+          "month": 11,
+          "gmv": 570660.55,
+          "growth_pct": -34.86
+        },
+        {
+          "month": 12,
+          "gmv": 507892.77,
+          "growth_pct": -11.0
+        }
+      ],
+      "result_row_count": 12
+    },
+    {
+      "id": "L71",
+      "difficulty": "困难",
+      "category": "子查询+占比",
+      "nl": "订单金额高于整体平均订单金额的订单占比",
+      "target_schema": "fact_order(order_amount)",
+      "gold_sql": "SELECT ROUND(SUM(CASE WHEN order_amount > (SELECT AVG(order_amount) FROM fact_order) THEN 1 ELSE 0 END) / COUNT(*), 4) AS above_avg_ratio FROM fact_order",
+      "expected_result": [
+        {
+          "above_avg_ratio": 0.2703
+        }
+      ],
+      "result_row_count": 1
+    },
+    {
+      "id": "L72",
+      "difficulty": "困难",
+      "category": "窗口函数 ROW_NUMBER",
+      "nl": "每个会员等级最畅销的品牌",
+      "target_schema": "fact_order, dim_customer, dim_product",
+      "gold_sql": "SELECT t.member_level, t.brand, t.quantity FROM (SELECT c.member_level, p.brand, SUM(f.order_quantity) AS quantity, ROW_NUMBER() OVER(PARTITION BY c.member_level ORDER BY SUM(f.order_quantity) DESC, p.brand) AS rn FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id JOIN dim_product p ON f.product_id = p.product_id GROUP BY c.member_level, p.brand) t WHERE t.rn = 1 ORDER BY t.member_level",
+      "expected_result": [
+        {
+          "member_level": "白银",
+          "brand": "华为",
+          "quantity": 85
+        },
+        {
+          "member_level": "铂金",
+          "brand": "奥利奥",
+          "quantity": 109
+        },
+        {
+          "member_level": "青铜",
+          "brand": "蒙牛",
+          "quantity": 107
+        },
+        {
+          "member_level": "黄金",
+          "brand": "耐克",
+          "quantity": 88
+        }
+      ],
+      "result_row_count": 4
+    },
+    {
+      "id": "L73",
+      "difficulty": "困难",
+      "category": "窗口函数累计SUM",
+      "nl": "各月GMV及年度累计销售额",
+      "target_schema": "fact_order, dim_date",
+      "gold_sql": "SELECT d.month, ROUND(SUM(f.order_amount), 2) AS gmv, ROUND(SUM(SUM(f.order_amount)) OVER(ORDER BY d.month), 2) AS cumulative_gmv FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id WHERE d.year = 2025 GROUP BY d.month ORDER BY d.month",
+      "expected_result": [
+        {
+          "month": 1,
+          "gmv": 938804.94,
+          "cumulative_gmv": 938804.94
+        },
+        {
+          "month": 2,
+          "gmv": 534303.54,
+          "cumulative_gmv": 1473108.49
+        },
+        {
+          "month": 3,
+          "gmv": 1646309.87,
+          "cumulative_gmv": 3119418.36
+        },
+        {
+          "month": 4,
+          "gmv": 542159.37,
+          "cumulative_gmv": 3661577.73
+        },
+        {
+          "month": 5,
+          "gmv": 705063.59,
+          "cumulative_gmv": 4366641.32
+        },
+        {
+          "month": 6,
+          "gmv": 631696.76,
+          "cumulative_gmv": 4998338.08
+        },
+        {
+          "month": 7,
+          "gmv": 810136.7,
+          "cumulative_gmv": 5808474.78
+        },
+        {
+          "month": 8,
+          "gmv": 933458.37,
+          "cumulative_gmv": 6741933.15
+        },
+        {
+          "month": 9,
+          "gmv": 544565.58,
+          "cumulative_gmv": 7286498.73
+        },
+        {
+          "month": 10,
+          "gmv": 876059.36,
+          "cumulative_gmv": 8162558.09
+        },
+        {
+          "month": 11,
+          "gmv": 570660.55,
+          "cumulative_gmv": 8733218.65
+        },
+        {
+          "month": 12,
+          "gmv": 507892.77,
+          "cumulative_gmv": 9241111.41
+        }
+      ],
+      "result_row_count": 12
+    },
+    {
+      "id": "L74",
+      "difficulty": "困难",
+      "category": "子查询+占比",
+      "nl": "各商品品类的订单数占比",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(COUNT(f.order_id) / (SELECT COUNT(*) FROM fact_order), 4) AS order_ratio FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY order_ratio DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "order_ratio": 0.3015
+        },
+        {
+          "category": "家用电器",
+          "order_ratio": 0.1646
+        },
+        {
+          "category": "食品饮料",
+          "order_ratio": 0.1341
+        },
+        {
+          "category": "鞋靴",
+          "order_ratio": 0.1308
+        },
+        {
+          "category": "服饰",
+          "order_ratio": 0.1186
+        },
+        {
+          "category": "休闲零食",
+          "order_ratio": 0.0976
+        },
+        {
+          "category": "图书文娱",
+          "order_ratio": 0.0528
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L75",
+      "difficulty": "困难",
+      "category": "CASE WHEN+占比",
+      "nl": "各品类中女性客户消费金额占比",
+      "target_schema": "fact_order, dim_customer, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(CASE WHEN c.gender = '女' THEN f.order_amount ELSE 0 END) / SUM(f.order_amount), 4) AS female_ratio FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY female_ratio DESC",
+      "expected_result": [
+        {
+          "category": "服饰",
+          "female_ratio": 0.6226
+        },
+        {
+          "category": "家用电器",
+          "female_ratio": 0.6144
+        },
+        {
+          "category": "鞋靴",
+          "female_ratio": 0.4883
+        },
+        {
+          "category": "图书文娱",
+          "female_ratio": 0.4863
+        },
+        {
+          "category": "休闲零食",
+          "female_ratio": 0.4854
+        },
+        {
+          "category": "食品饮料",
+          "female_ratio": 0.4844
+        },
+        {
+          "category": "手机数码",
+          "female_ratio": 0.457
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L76",
+      "difficulty": "困难",
+      "category": "窗口函数 ROW_NUMBER",
+      "nl": "每个品类内部销量最高的前2个商品",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT t.category, t.product_name, t.quantity FROM (SELECT p.category, p.product_name, SUM(f.order_quantity) AS quantity, ROW_NUMBER() OVER(PARTITION BY p.category ORDER BY SUM(f.order_quantity) DESC, p.product_name) AS rn FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category, p.product_name) t WHERE t.rn <= 2 ORDER BY t.category, t.quantity DESC",
+      "expected_result": [
+        {
+          "category": "休闲零食",
+          "product_name": "奥利奥巧克力夹心饼干",
+          "quantity": 263
+        },
+        {
+          "category": "休闲零食",
+          "product_name": "乐事原味薯片 150g",
+          "quantity": 183
+        },
+        {
+          "category": "图书文娱",
+          "product_name": "《三体》全集",
+          "quantity": 147
+        },
+        {
+          "category": "图书文娱",
+          "product_name": "乐高城市系列积木",
+          "quantity": 98
+        },
+        {
+          "category": "家用电器",
+          "product_name": "飞利浦空气炸锅",
+          "quantity": 120
+        },
+        {
+          "category": "家用电器",
+          "product_name": "格力空调 KFR-72LW",
+          "quantity": 117
+        },
+        {
+          "category": "手机数码",
+          "product_name": "Sony WH-1000XM5 耳机",
+          "quantity": 194
+        },
+        {
+          "category": "手机数码",
+          "product_name": "MacBook Pro 14寸",
+          "quantity": 133
+        },
+        {
+          "category": "服饰",
+          "product_name": "李维斯 501 牛仔裤",
+          "quantity": 146
+        },
+        {
+          "category": "服饰",
+          "product_name": "优衣库 Heattech 保暖夹克",
+          "quantity": 124
+        },
+        {
+          "category": "鞋靴",
+          "product_name": "耐克 Air Max 270 运动鞋",
+          "quantity": 173
+        },
+        {
+          "category": "鞋靴",
+          "product_name": "阿迪达斯 Ultraboost 跑鞋",
+          "quantity": 139
+        },
+        {
+          "category": "食品饮料",
+          "product_name": "蒙牛纯牛奶 250ml*12",
+          "quantity": 238
+        },
+        {
+          "category": "食品饮料",
+          "product_name": "雀巢金牌速溶咖啡",
+          "quantity": 174
+        }
+      ],
+      "result_row_count": 14
+    },
+    {
+      "id": "L77",
+      "difficulty": "困难",
+      "category": "窗口函数+子查询过滤",
+      "nl": "销售额高于其所属品类平均销售额的商品",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT t.product_name, t.category, ROUND(t.gmv, 2) AS gmv FROM (SELECT p.product_name, p.category, SUM(f.order_amount) AS gmv, AVG(SUM(f.order_amount)) OVER(PARTITION BY p.category) AS cat_avg FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.product_name, p.category) t WHERE t.gmv > t.cat_avg ORDER BY t.category, t.gmv DESC",
+      "expected_result": [
+        {
+          "product_name": "三只松鼠坚果礼盒",
+          "category": "休闲零食",
+          "gmv": 6254.05
+        },
+        {
+          "product_name": "《三体》全集",
+          "category": "图书文娱",
+          "gmv": 38018.81
+        },
+        {
+          "product_name": "戴森 V15 吸尘器",
+          "category": "家用电器",
+          "gmv": 540324.55
+        },
+        {
+          "product_name": "格力空调 KFR-72LW",
+          "category": "家用电器",
+          "gmv": 245969.4
+        },
+        {
+          "product_name": "美的空调 KFR-35GW",
+          "category": "家用电器",
+          "gmv": 245287.26
+        },
+        {
+          "product_name": "Mate 60 Pro",
+          "category": "手机数码",
+          "gmv": 925472.15
+        },
+        {
+          "product_name": "Galaxy S24 Ultra",
+          "category": "手机数码",
+          "gmv": 924427.43
+        },
+        {
+          "product_name": "MacBook Pro 14寸",
+          "category": "手机数码",
+          "gmv": 834191.24
+        },
+        {
+          "product_name": "Sony WH-1000XM5 耳机",
+          "category": "手机数码",
+          "gmv": 817492.85
+        },
+        {
+          "product_name": "iPhone 15 Pro",
+          "category": "手机数码",
+          "gmv": 758896.93
+        },
+        {
+          "product_name": "Switch OLED 游戏机",
+          "category": "手机数码",
+          "gmv": 727148.58
+        },
+        {
+          "product_name": "李维斯 501 牛仔裤",
+          "category": "服饰",
+          "gmv": 87371.75
+        },
+        {
+          "product_name": "阿迪达斯 Ultraboost 跑鞋",
+          "category": "鞋靴",
+          "gmv": 178585.74
+        },
+        {
+          "product_name": "耐克 Air Max 270 运动鞋",
+          "category": "鞋靴",
+          "gmv": 157012.59
+        },
+        {
+          "product_name": "星巴克美式咖啡豆",
+          "category": "食品饮料",
+          "gmv": 12631.07
+        },
+        {
+          "product_name": "伊利纯牛奶 1L*6",
+          "category": "食品饮料",
+          "gmv": 6478.21
+        }
+      ],
+      "result_row_count": 16
+    },
+    {
+      "id": "L78",
+      "difficulty": "困难",
+      "category": "CASE WHEN+分组占比",
+      "nl": "各大区单笔金额超过1万元的大单订单占比",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.region_name, ROUND(SUM(CASE WHEN f.order_amount > 10000 THEN 1 ELSE 0 END) / COUNT(f.order_id), 4) AS big_order_ratio FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name ORDER BY big_order_ratio DESC",
+      "expected_result": [
+        {
+          "region_name": "西南",
+          "big_order_ratio": 0.2025
+        },
+        {
+          "region_name": "西北",
+          "big_order_ratio": 0.1967
+        },
+        {
+          "region_name": "东北",
+          "big_order_ratio": 0.1828
+        },
+        {
+          "region_name": "华北",
+          "big_order_ratio": 0.1802
+        },
+        {
+          "region_name": "华东",
+          "big_order_ratio": 0.1638
+        },
+        {
+          "region_name": "华中",
+          "big_order_ratio": 0.1212
+        },
+        {
+          "region_name": "华南",
+          "big_order_ratio": 0.1129
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L79",
+      "difficulty": "困难",
+      "category": "多占比计算",
+      "nl": "各会员等级的销量占比和销售额占比",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT c.member_level, ROUND(SUM(f.order_quantity) / (SELECT SUM(order_quantity) FROM fact_order), 4) AS qty_ratio, ROUND(SUM(f.order_amount) / (SELECT SUM(order_amount) FROM fact_order), 4) AS gmv_ratio FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id GROUP BY c.member_level ORDER BY c.member_level",
+      "expected_result": [
+        {
+          "member_level": "白银",
+          "qty_ratio": 0.2668,
+          "gmv_ratio": 0.2948
+        },
+        {
+          "member_level": "铂金",
+          "qty_ratio": 0.2215,
+          "gmv_ratio": 0.2202
+        },
+        {
+          "member_level": "青铜",
+          "qty_ratio": 0.2255,
+          "gmv_ratio": 0.2024
+        },
+        {
+          "member_level": "黄金",
+          "qty_ratio": 0.2862,
+          "gmv_ratio": 0.2827
+        }
+      ],
+      "result_row_count": 4
+    },
+    {
+      "id": "L80",
+      "difficulty": "困难",
+      "category": "条件聚合+增长率",
+      "nl": "各大区Q4销售额相对Q1的增长率",
+      "target_schema": "fact_order, dim_region, dim_date",
+      "gold_sql": "SELECT r.region_name, ROUND((SUM(CASE WHEN d.quarter = 'Q4' THEN f.order_amount ELSE 0 END) - SUM(CASE WHEN d.quarter = 'Q1' THEN f.order_amount ELSE 0 END)) / SUM(CASE WHEN d.quarter = 'Q1' THEN f.order_amount ELSE 0 END) * 100, 2) AS q4_vs_q1_pct FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id JOIN dim_date d ON f.date_id = d.date_id GROUP BY r.region_name ORDER BY r.region_name",
+      "expected_result": [
+        {
+          "region_name": "东北",
+          "q4_vs_q1_pct": -16.12
+        },
+        {
+          "region_name": "华东",
+          "q4_vs_q1_pct": -34.82
+        },
+        {
+          "region_name": "华中",
+          "q4_vs_q1_pct": -61.11
+        },
+        {
+          "region_name": "华北",
+          "q4_vs_q1_pct": -78.11
+        },
+        {
+          "region_name": "华南",
+          "q4_vs_q1_pct": -53.47
+        },
+        {
+          "region_name": "西北",
+          "q4_vs_q1_pct": -31.68
+        },
+        {
+          "region_name": "西南",
+          "q4_vs_q1_pct": -32.15
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L81",
+      "difficulty": "困难",
+      "category": "窗口函数+组内占比",
+      "nl": "各省份订单数及其在所属大区内的占比",
+      "target_schema": "fact_order, dim_region",
+      "gold_sql": "SELECT r.region_name, r.province, COUNT(f.order_id) AS order_count, ROUND(COUNT(f.order_id) / SUM(COUNT(f.order_id)) OVER(PARTITION BY r.region_name), 4) AS ratio_in_region FROM fact_order f JOIN dim_region r ON f.region_id = r.region_id GROUP BY r.region_name, r.province ORDER BY r.region_name, order_count DESC, r.province",
+      "expected_result": [
+        {
+          "region_name": "东北",
+          "province": "辽宁省",
+          "order_count": 97,
+          "ratio_in_region": 0.3477
+        },
+        {
+          "region_name": "东北",
+          "province": "吉林省",
+          "order_count": 92,
+          "ratio_in_region": 0.3297
+        },
+        {
+          "region_name": "东北",
+          "province": "黑龙江省",
+          "order_count": 90,
+          "ratio_in_region": 0.3226
+        },
+        {
+          "region_name": "华东",
+          "province": "上海市",
+          "order_count": 100,
+          "ratio_in_region": 0.2825
+        },
+        {
+          "region_name": "华东",
+          "province": "浙江省",
+          "order_count": 98,
+          "ratio_in_region": 0.2768
+        },
+        {
+          "region_name": "华东",
+          "province": "江苏省",
+          "order_count": 79,
+          "ratio_in_region": 0.2232
+        },
+        {
+          "region_name": "华东",
+          "province": "福建省",
+          "order_count": 77,
+          "ratio_in_region": 0.2175
+        },
+        {
+          "region_name": "华中",
+          "province": "湖北省",
+          "order_count": 99,
+          "ratio_in_region": 1
+        },
+        {
+          "region_name": "华北",
+          "province": "北京市",
+          "order_count": 111,
+          "ratio_in_region": 1
+        },
+        {
+          "region_name": "华南",
+          "province": "广东省",
+          "order_count": 124,
+          "ratio_in_region": 1
+        },
+        {
+          "region_name": "西北",
+          "province": "甘肃省",
+          "order_count": 100,
+          "ratio_in_region": 0.5464
+        },
+        {
+          "region_name": "西北",
+          "province": "陕西省",
+          "order_count": 83,
+          "ratio_in_region": 0.4536
+        },
+        {
+          "region_name": "西南",
+          "province": "四川省",
+          "order_count": 125,
+          "ratio_in_region": 0.3834
+        },
+        {
+          "region_name": "西南",
+          "province": "云南省",
+          "order_count": 111,
+          "ratio_in_region": 0.3405
+        },
+        {
+          "region_name": "西南",
+          "province": "贵州省",
+          "order_count": 90,
+          "ratio_in_region": 0.2761
+        }
+      ],
+      "result_row_count": 15
+    },
+    {
+      "id": "L82",
+      "difficulty": "困难",
+      "category": "HAVING+过滤",
+      "nl": "铂金会员消费金额超过10万的品类",
+      "target_schema": "fact_order, dim_customer, dim_product",
+      "gold_sql": "SELECT p.category, ROUND(SUM(f.order_amount), 2) AS gmv FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id JOIN dim_product p ON f.product_id = p.product_id WHERE c.member_level = '铂金' GROUP BY p.category HAVING SUM(f.order_amount) > 100000 ORDER BY gmv DESC",
+      "expected_result": [
+        {
+          "category": "手机数码",
+          "gmv": 1574715.68
+        },
+        {
+          "category": "家用电器",
+          "gmv": 326760.34
+        }
+      ],
+      "result_row_count": 2
+    },
+    {
+      "id": "L83",
+      "difficulty": "困难",
+      "category": "CASE WHEN多分支",
+      "nl": "各品类订单金额分档统计 (低<500/中500-5000/高>5000)",
+      "target_schema": "fact_order, dim_product",
+      "gold_sql": "SELECT p.category, SUM(CASE WHEN f.order_amount < 500 THEN 1 ELSE 0 END) AS low_orders, SUM(CASE WHEN f.order_amount BETWEEN 500 AND 5000 THEN 1 ELSE 0 END) AS mid_orders, SUM(CASE WHEN f.order_amount > 5000 THEN 1 ELSE 0 END) AS high_orders FROM fact_order f JOIN dim_product p ON f.product_id = p.product_id GROUP BY p.category ORDER BY p.category",
+      "expected_result": [
+        {
+          "category": "休闲零食",
+          "low_orders": 143,
+          "mid_orders": 1,
+          "high_orders": 0
+        },
+        {
+          "category": "图书文娱",
+          "low_orders": 40,
+          "mid_orders": 36,
+          "high_orders": 2
+        },
+        {
+          "category": "家用电器",
+          "low_orders": 0,
+          "mid_orders": 157,
+          "high_orders": 86
+        },
+        {
+          "category": "手机数码",
+          "low_orders": 0,
+          "mid_orders": 94,
+          "high_orders": 351
+        },
+        {
+          "category": "服饰",
+          "low_orders": 88,
+          "mid_orders": 84,
+          "high_orders": 3
+        },
+        {
+          "category": "鞋靴",
+          "low_orders": 31,
+          "mid_orders": 144,
+          "high_orders": 18
+        },
+        {
+          "category": "食品饮料",
+          "low_orders": 192,
+          "mid_orders": 6,
+          "high_orders": 0
+        }
+      ],
+      "result_row_count": 7
+    },
+    {
+      "id": "L84",
+      "difficulty": "困难",
+      "category": "窗口函数 ROW_NUMBER",
+      "nl": "消费金额排名前10的客户及其会员等级",
+      "target_schema": "fact_order, dim_customer",
+      "gold_sql": "SELECT c.customer_name, c.member_level, ROUND(SUM(f.order_amount), 2) AS gmv, ROW_NUMBER() OVER(ORDER BY SUM(f.order_amount) DESC, c.customer_name) AS rn FROM fact_order f JOIN dim_customer c ON f.customer_id = c.customer_id GROUP BY c.customer_name, c.member_level ORDER BY gmv DESC, c.customer_name LIMIT 10",
+      "expected_result": [
+        {
+          "customer_name": "邓超",
+          "member_level": "白银",
+          "gmv": 650296.22,
+          "rn": 1
+        },
+        {
+          "customer_name": "徐浩",
+          "member_level": "白银",
+          "gmv": 454898.06,
+          "rn": 2
+        },
+        {
+          "customer_name": "周洁",
+          "member_level": "白银",
+          "gmv": 445576.59,
+          "rn": 3
+        },
+        {
+          "customer_name": "邓慧",
+          "member_level": "青铜",
+          "gmv": 409764.07,
+          "rn": 4
+        },
+        {
+          "customer_name": "高梅",
+          "member_level": "铂金",
+          "gmv": 391945.91,
+          "rn": 5
+        },
+        {
+          "customer_name": "周燕",
+          "member_level": "铂金",
+          "gmv": 385531.61,
+          "rn": 6
+        },
+        {
+          "customer_name": "吴斌",
+          "member_level": "黄金",
+          "gmv": 347304.78,
+          "rn": 7
+        },
+        {
+          "customer_name": "胡杰",
+          "member_level": "黄金",
+          "gmv": 311643.75,
+          "rn": 8
+        },
+        {
+          "customer_name": "赵丽",
+          "member_level": "黄金",
+          "gmv": 276032.63,
+          "rn": 9
+        },
+        {
+          "customer_name": "许晴",
+          "member_level": "青铜",
+          "gmv": 275254.48,
+          "rn": 10
+        }
+      ],
+      "result_row_count": 10
+    },
+    {
+      "id": "L85",
+      "difficulty": "困难",
+      "category": "窗口函数 ROW_NUMBER",
+      "nl": "各季度销售额最高的大区",
+      "target_schema": "fact_order, dim_date, dim_region",
+      "gold_sql": "SELECT t.quarter, t.region_name, ROUND(t.gmv, 2) AS gmv FROM (SELECT d.quarter, r.region_name, SUM(f.order_amount) AS gmv, ROW_NUMBER() OVER(PARTITION BY d.quarter ORDER BY SUM(f.order_amount) DESC, r.region_name) AS rn FROM fact_order f JOIN dim_date d ON f.date_id = d.date_id JOIN dim_region r ON f.region_id = r.region_id GROUP BY d.quarter, r.region_name) t WHERE t.rn = 1 ORDER BY t.quarter",
+      "expected_result": [
+        {
+          "quarter": "Q1",
+          "region_name": "华东",
+          "gmv": 805381.96
+        },
+        {
+          "quarter": "Q2",
+          "region_name": "西南",
+          "gmv": 415811.65
+        },
+        {
+          "quarter": "Q3",
+          "region_name": "西南",
+          "gmv": 692529.03
+        },
+        {
+          "quarter": "Q4",
+          "region_name": "华东",
+          "gmv": 524908.23
+        }
+      ],
+      "result_row_count": 4
     }
   ],
   "stats": {
-    "简单": 8,
-    "中等": 10,
-    "困难": 17
+    "简单": 20,
+    "中等": 28,
+    "困难": 37
   },
-  "total": 35
+  "total": 85
 }

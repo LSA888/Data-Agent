@@ -165,12 +165,33 @@ tables:
 
 metrics:
   - name: GMV
-    description: 全称Gross Merchandise Value，表示所有订单的成交金额总和。
+    description: 全称Gross Merchandise Value，表示所有订单的成交金额总和，计算方式为 SUM(order_amount)。
     relevant_columns:
       - fact_order.order_amount
-    alias: [成交总额, 订单总额]
+    alias: [成交总额, 订单总额, 销售额, 销售总额, 营收]
   - name: AOV
-    description: 全称Average Order Value，表示所有订单的成交金额平均值。
+    description: 全称Average Order Value，表示所有订单的成交金额平均值，计算方式为 SUM(order_amount) / COUNT(order_id)。
+    relevant_columns:
+      - fact_order.order_amount
+    alias: [平均订单金额, 平均单价, 客单价]
+  - name: TQ
+    description: 全称Total Quantity，表示所有订单的商品购买数量总和，计算方式为 SUM(order_quantity)。
     relevant_columns:
       - fact_order.order_quantity
-    alias: [平均单价, 平均订单金额]
+    alias: [总销量, 销量, 购买数量, 总件数, 销售件数]
+  - name: OC
+    description: 全称Order Count，表示订单的总数量，计算方式为 COUNT(order_id)。
+    relevant_columns:
+      - fact_order.order_id
+    alias: [订单数, 订单数量, 订单总数, 下单量]
+  - name: UC
+    description: 全称User Count，表示下过单的不同客户数量，计算方式为 COUNT(DISTINCT customer_id)。
+    relevant_columns:
+      - fact_order.customer_id
+    alias: [下单客户数, 下单人数, 客户数, 购买人数]
+  - name: APC
+    description: 全称Average Per Customer，表示平均每个客户的消费金额，计算方式为 SUM(order_amount) / COUNT(DISTINCT customer_id)。
+    relevant_columns:
+      - fact_order.order_amount
+      - fact_order.customer_id
+    alias: [人均消费, 客单价, 客户平均消费, 每客单价]

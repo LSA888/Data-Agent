@@ -7,7 +7,7 @@
 - **LangGraph 12 节点确定性工作流**：关键词抽取 → 扩展召回 → 字段/指标/取值召回 → 合并过滤 → SQL 生成 → 验证 → 校正 → 执行，固定执行路径 + 验证校正分支
 - **Schema Linking 混合检索架构**：Qdrant 向量库负责字段/指标语义召回 + Elasticsearch 负责字段取值模糊匹配，解决全量 schema 超 token 问题
 - **完整的星型 DW 数据仓库**：fact_order + dim_customer / dim_product / dim_region / dim_date，覆盖 4 季度 × 15 省份 × 7 品类 × 4 会员等级
-- **自动化评测体系**：35 条分难度测试集（含真实执行的 gold_sql + expected_result），覆盖 JOIN / GROUP BY / 窗口函数 / CASE WHEN / HAVING / Top N 等场景
+- **自动化评测体系**：85 条分难度测试集（含真实执行的 gold_sql + expected_result），覆盖 JOIN / GROUP BY / 窗口函数（RANK / ROW_NUMBER / LAG / 累计 SUM）/ CASE WHEN / HAVING / Top N / 组内占比等场景
 
 ## 🏗️ 架构
 
@@ -121,13 +121,13 @@ cd data-agent-fronted && npm install && npm run dev
 
 ## 🧪 评测
 
-内置 **35 条分难度测试集**，覆盖 Text-to-SQL 核心场景：
+内置 **85 条分难度测试集**，覆盖 Text-to-SQL 核心场景：
 
 | 难度 | 数量 | 覆盖场景 |
 |------|------|----------|
-| 简单 | 8 | 单表聚合 / COUNT DISTINCT / 基础 JOIN + 过滤 |
-| 中等 | 10 | GROUP BY + 排序 / Top N LIMIT / 指标别名 GMV·AOV / 时间序列 |
-| 困难 | 17 | CASE WHEN 占比 / 窗口函数 RANK·LAG / 子查询 / 多表 JOIN / HAVING / BETWEEN / 多条件 AND/OR |
+| 简单 | 20 | 单表聚合 SUM/AVG/MAX/MIN / COUNT DISTINCT / 基础 JOIN + 过滤 |
+| 中等 | 28 | GROUP BY + 排序 / 双维度聚合 / Top N LIMIT / 指标别名 GMV·AOV / 时间序列 / HAVING |
+| 困难 | 37 | CASE WHEN 占比 / 窗口函数 RANK·ROW_NUMBER·LAG·累计 SUM / 子查询 / 多表 JOIN / 组内占比 / 条件聚合增长率 / BETWEEN / 多条件 AND/OR |
 
 每条测试用例在真实 MySQL 上执行过，`expected_result` 是数据库实际返回值。
 
@@ -147,8 +147,8 @@ uv run python scripts/eval_sql_accuracy.py
 ```json
 {
   "summary": {
-    "total": 35,
-    "sql_correct": 35,        // Agent SQL 语法正确 (能执行)
+    "total": 85,
+    "sql_correct": 85,        // Agent SQL 语法正确 (能执行)
     "sql_error": 0,           // Agent SQL 报错
     "result_correct": 28,     // 结果与 gold 一致
     "result_wrong": 7,

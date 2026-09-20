@@ -34,6 +34,7 @@ SQL 生成准确率评测脚本 (v2)
 """
 
 import json
+import os
 import re
 import sys
 import time
@@ -47,7 +48,11 @@ import requests
 BACKEND_URL = "http://localhost:8000/api/query"
 TESTSET_PATH = Path(__file__).parent.parent / "tests" / "sql_gen_testset.json"
 REPORT_PATH = Path(__file__).parent.parent / "tests" / "eval_report.json"
-AGENT_TIMEOUT = 120
+# SSE 流式读取: timeout 是“两个数据块之间”的最大等待, 不是整请求耗时
+# 困难题(窗口函数)LLM 长尾延迟较高, read timeout 给 300s; 可用环境变量覆盖
+CONNECT_TIMEOUT = float(os.getenv("EVAL_CONNECT_TIMEOUT", "10"))
+READ_TIMEOUT = float(os.getenv("EVAL_READ_TIMEOUT", "300"))
+MAX_RETRIES = int(os.getenv("EVAL_MAX_RETRIES", "2"))  # 超时/连接错误时的最大重试次数(不含首次)
 # =============================================
 
 
@@ -56,50 +61,60 @@ def call_agent(nl_query: str) -> tuple[str | None, list[dict] | None, str | None
     调用后端 API, 解析 SSE 流
 
     返回: (agent_sql, agent_result, agent_error)
+    超时/连接异常时自动重试 MAX_RETRIES 次; 最终失败返回 error 而非抛出,
+    保证单条用例异常不会中断整批评测。
     """
-    sql_text = None
-    result_rows = None
-    error_msg = None
+    last_error = None
 
-    try:
-        resp = requests.post(
-            BACKEND_URL,
-            json={"query": nl_query},
-            stream=True,
-            timeout=AGENT_TIMEOUT,
-        )
-        resp.raise_for_status()
-    except Exception as e:
-        return None, None, f"请求异常: {e}"
+    for attempt in range(MAX_RETRIES + 1):
+        sql_text = None
+        result_rows = None
+        error_msg = None
 
-    for raw_line in resp.iter_lines(decode_unicode=True):
-        if not raw_line or not raw_line.startswith("data: "):
-            continue
         try:
-            data = json.loads(raw_line[6:])
-        except json.JSONDecodeError:
-            continue
+            resp = requests.post(
+                BACKEND_URL,
+                json={"query": nl_query},
+                stream=True,
+                timeout=(CONNECT_TIMEOUT, READ_TIMEOUT),
+            )
+            resp.raise_for_status()
 
-        tp = data.get("type", "")
-        payload = data.get("data")
+            for raw_line in resp.iter_lines(decode_unicode=True):
+                if not raw_line or not raw_line.startswith("data: "):
+                    continue
+                try:
+                    data = json.loads(raw_line[6:])
+                except json.JSONDecodeError:
+                    continue
 
-        if tp == "sql" and isinstance(payload, str):
-            sql_text = payload.strip()
+                tp = data.get("type", "")
+                payload = data.get("data")
 
-        elif tp == "result" and isinstance(payload, list):
-            result_rows = payload
+                if tp == "sql" and isinstance(payload, str):
+                    sql_text = payload.strip()
 
-        elif tp == "error":
-            error_msg = str(payload)
+                elif tp == "result" and isinstance(payload, list):
+                    result_rows = payload
 
-    # 兜底: 扫所有事件找 SQL
-    if not sql_text:
-        # 遍历所有 data 找第一条 SELECT
-        raw_events = []
-        # 重新解析一次 (上面已经消费完了, 这里没法回头)
-        pass
+                elif tp == "error":
+                    error_msg = str(payload)
 
-    return sql_text, result_rows, error_msg
+            return sql_text, result_rows, error_msg
+
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError) as e:
+            # 读超时/连接断开: 等 3s 后重试 (SSE 中途超时会丢流, 只能整请求重发)
+            last_error = f"请求超时/连接中断(第{attempt + 1}次): {e}"
+            if attempt < MAX_RETRIES:
+                print(f"  ⏳ {last_error} → 3秒后重试...", flush=True)
+                time.sleep(3)
+                continue
+            return None, None, last_error
+        except Exception as e:
+            return None, None, f"请求异常: {e}"
+
+    return None, None, last_error
 
 
 def normalize_value(val):
@@ -191,6 +206,56 @@ def compare_results(gold: list[dict] | None, agent: list[dict] | None) -> bool:
     return True
 
 
+def build_report(records: list[dict], elapsed: float) -> dict:
+    """根据已完成的记录构建报告 (统计口径与最终汇总一致)"""
+    total = len(records)
+    pass_count = sum(1 for r in records if r["status"] == "PASS")
+    fail_sql = sum(1 for r in records if r["status"] == "FAIL_SQL")
+    fail_result = sum(1 for r in records if r["status"] == "FAIL_RESULT")
+    sql_ok = total - fail_sql
+    result_ok = pass_count
+
+    by_diff = {}
+    for r in records:
+        d = r["difficulty"]
+        by_diff.setdefault(d, {"total": 0, "pass": 0, "fail_sql": 0, "fail_result": 0})
+        by_diff[d]["total"] += 1
+        by_diff[d][r["status"].lower()] += 1
+
+    return {
+        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "backend_url": BACKEND_URL,
+        "elapsed_seconds": round(elapsed, 1),
+        "per_case_seconds": round(elapsed / total, 1) if total else 0,
+        "summary": {
+            "total": total,
+            "sql_correct": sql_ok,
+            "sql_error": fail_sql,
+            "result_correct": result_ok,
+            "result_wrong": fail_result + fail_sql,
+            "sql_accuracy_pct": round(sql_ok / total * 100, 1) if total else 0,
+            "result_accuracy_pct": round(result_ok / total * 100, 1) if total else 0,
+            "by_difficulty": {
+                d: {
+                    "total": s["total"],
+                    "pass": s["pass"],
+                    "fail_sql": s["fail_sql"],
+                    "fail_result": s["fail_result"],
+                    "result_accuracy_pct": round(s["pass"] / s["total"] * 100, 1) if s["total"] else 0,
+                }
+                for d, s in sorted(by_diff.items())
+            },
+        },
+        "details": records,
+    }
+
+
+def save_report(records: list[dict], elapsed: float):
+    """实时落盘, 保证中途超时/崩溃时已跑完的结果不丢"""
+    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+        json.dump(build_report(records, elapsed), f, ensure_ascii=False, indent=2, default=str)
+
+
 def main():
     # ---- 检查后端 ----
     try:
@@ -264,23 +329,22 @@ def main():
             "agent_error": agent_error,
         })
 
+        # 每条用例后实时落盘, 中途异常也能保留已完成结果
+        save_report(records, time.time() - t0)
+
     elapsed = time.time() - t0
 
     # ---- 统计 ----
-    total = len(records)
-    pass_count = sum(1 for r in records if r["status"] == "PASS")
-    fail_sql = sum(1 for r in records if r["status"] == "FAIL_SQL")
+    final_report = build_report(records, elapsed)
+    summary = final_report["summary"]
+    total = summary["total"]
+    sql_ok = summary["sql_correct"]
+    fail_sql = summary["sql_error"]
+    result_ok = summary["result_correct"]
     fail_result = sum(1 for r in records if r["status"] == "FAIL_RESULT")
-    sql_ok = total - fail_sql          # SQL 语法正确的数量
-    result_ok = pass_count              # 结果正确的数量
-
-    # 按难度分层
-    by_diff = {}
-    for r in records:
-        d = r["difficulty"]
-        by_diff.setdefault(d, {"total": 0, "pass": 0, "fail_sql": 0, "fail_result": 0})
-        by_diff[d]["total"] += 1
-        by_diff[d][r["status"].lower()] += 1
+    by_diff = {
+        d: s for d, s in summary["by_difficulty"].items()
+    }
 
     print("\n" + "=" * 70)
     print("📊 评测结果汇总")
@@ -309,36 +373,8 @@ def main():
             reason = "SQL报错" if r["status"] == "FAIL_SQL" else "结果不一致"
             print(f"    {r['id']} [{r['difficulty']}] {reason} — {r['nl'][:50]}")
 
-    # ---- 保存报告 ----
-    report = {
-        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "backend_url": BACKEND_URL,
-        "elapsed_seconds": round(elapsed, 1),
-        "per_case_seconds": round(elapsed / total, 1) if total else 0,
-        "summary": {
-            "total": total,
-            "sql_correct": sql_ok,
-            "sql_error": fail_sql,
-            "result_correct": result_ok,
-            "result_wrong": fail_result + fail_sql,
-            "sql_accuracy_pct": round(sql_ok / total * 100, 1) if total else 0,
-            "result_accuracy_pct": round(result_ok / total * 100, 1) if total else 0,
-            "by_difficulty": {
-                d: {
-                    "total": s["total"],
-                    "pass": s["pass"],
-                    "fail_sql": s["fail_sql"],
-                    "fail_result": s["fail_result"],
-                    "result_accuracy_pct": round(s["pass"] / s["total"] * 100, 1) if s["total"] else 0,
-                }
-                for d, s in sorted(by_diff.items())
-            },
-        },
-        "details": records,
-    }
-
-    with open(REPORT_PATH, "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2, default=str)
+    # ---- 保存最终报告 ----
+    save_report(records, elapsed)
 
     print(f"\n  📄 完整报告: {REPORT_PATH}")
     print("=" * 70)

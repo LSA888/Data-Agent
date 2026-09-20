@@ -31,11 +31,11 @@ class DWMySQLRepository:
 
     @staticmethod
     def _format_value(value):
-        """对 float 和 Decimal 类型保留两位小数，其他类型原样返回。"""
+        """对 float 和 Decimal 类型保留四位小数，其他类型原样返回。"""
         if isinstance(value, float):
-            return round(value, 2)
+            return round(value, 4)
         if isinstance(value, Decimal):
-            return float(round(value, 2))
+            return float(round(value, 4))
         return value
 
     async def execute_sql(self, sql):
